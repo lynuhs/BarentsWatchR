@@ -158,7 +158,7 @@ create_barentswatch_token <- function(){
   barentswatch_token <- oauth2.0_token(endpoint = endpoint,
                                        app = app,
                                        scope = "api",
-                                       cache = cache)
+                                       cache = cache, client_credentials = TRUE)
 
   stopifnot(is_legit_token(barentswatch_token))
 
