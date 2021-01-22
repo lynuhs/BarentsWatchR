@@ -17,7 +17,6 @@ BarentsWatchAuth <- R6::R6Class(
 #'
 #' Generate a token for the user and the desired scope. The user is sent to the barentswatch authentication page if he/she hasn't given permission to the app yet, else, is sent to the app webpage.
 #'
-#' @param app_name Name of your developer app
 #' @param app_client_id The Client ID of your developer app
 #' @param app_secret The secret for your developer app
 #'
@@ -26,12 +25,11 @@ BarentsWatchAuth <- R6::R6Class(
 #'
 #' @export
 #' @examples
-#' barentswatch_auth(app_name = "APP Name", app_client_id = "App Client ID", app_secret = "APP Secret", token = NULL, new_user = FALSE)
-barentswatch_auth <- function(app_name = Sys.getenv("BARENTSWATCH_APP_NAME"), app_client_id = Sys.getenv("BARENTSWATCH_APP_ID"), app_secret = Sys.getenv("BARENTSWATCH_APP_SECRET"), token = NULL, new_user = FALSE){
-  if((app_client_id == "" | app_secret == "" | app_name == "") & is.null(token)){
+#' barentswatch_auth(app_client_id = "App Client ID", app_secret = "APP Secret", token = NULL, new_user = FALSE)
+barentswatch_auth <- function(app_client_id = Sys.getenv("BARENTSWATCH_APP_ID"), app_secret = Sys.getenv("BARENTSWATCH_APP_SECRET"), token = NULL, new_user = FALSE){
+  if((app_client_id == "" | app_secret == "") & is.null(token)){
     stop("Need a valid App name, App Client Id and App Secret in order to authorize connection!", call. = FALSE)
   } else {
-    Sys.setenv(BARENTSWATCH_APP_NAME = app_name)
     Sys.setenv(BARENTSWATCH_APP_ID = app_client_id)
     Sys.setenv(BARENTSWATCH_APP_SECRET = app_secret)
   }
@@ -46,7 +44,6 @@ barentswatch_auth <- function(app_name = Sys.getenv("BARENTSWATCH_APP_NAME"), ap
                                                     ifelse(is.null(token), "barentswatch.httr-oauth", token),
                                                     getOption("barentsWatchR.httr_oauth_cache")))
 
-  options("barentsWatchR.app_name" = checkEnvFile("BARENTSWATCH_APP_NAME"))
   options("barentsWatchR.app_id" = checkEnvFile("BARENTSWATCH_APP_ID"))
   options("barentsWatchR.app_secret" = checkEnvFile("BARENTSWATCH_APP_SECRET"))
 
@@ -133,18 +130,13 @@ create_barentswatch_token <- function(){
     }
   }
 
-  endpoint <- oauth_endpoint(request = "https://www.barentswatch.com/oauth/authorize?",
-                             authorize = "https://www.barentswatch.com/oauth/authorize",
-                             access = "https://www.barentswatch.com/oauth/token")
+  endpoint <- oauth_endpoint(request = "https://id.barentswatch.no/connect/authorize?",
+                             authorize = "https://id.barentswatch.no/connect/authorize",
+                             access = "https://id.barentswatch.no/connect/token")
 
-  app_name <- getOption("barentsWatchR.app_name", "")
   app_client_id    <- getOption("barentsWatchR.app_id", "")
   app_secret <- getOption("barentsWatchR.app_secret", "")
   cache  <- getOption("barentsWatchR.httr_oauth_cache", "")
-
-  if(app_name == ""){
-    stop("option('barentsWatchR.app_name') has not been set", call. = FALSE)
-  }
 
   if(app_client_id == ""){
     stop("option('barentsWatchR.app_id') has not been set", call. = FALSE)
@@ -158,14 +150,14 @@ create_barentswatch_token <- function(){
     stop("option('barentsWatchR.httr_oauth_cache') has not been set", call. = FALSE)
   }
 
-  app <- oauth_app(appname = app_name,
+  app <- oauth_app(appname = "BarentsWatch",
                    key = app_client_id,
                    secret = app_secret)
 
 
   barentswatch_token <- oauth2.0_token(endpoint = endpoint,
                                        app = app,
-                                       scope = "activity:read_all,profile:read_all",
+                                       scope = "api",
                                        cache = cache)
 
   stopifnot(is_legit_token(barentswatch_token))
@@ -291,11 +283,6 @@ overwrite_options <- function(barentswatch_token, token_path){
   if(is.different(barentswatch_token$app$secret, "barentsWatchR.app_secret")){
     cat(crayon::red(paste0("Overwriting barentsWatchR.app_secret to ", barentswatch_token$app$secret,"\n")))
     options("barentsWatchR.app_secret" = barentswatch_token$app$secret)
-  }
-
-  if(is.different(barentswatch_token$app$appname, "barentsWatchR.app_name")){
-    cat(crayon::red(paste0("Overwriting barentsWatchR.app_name to ", barentswatch_token$app$appname,"\n")))
-    options("barentsWatchR.app_name" = barentswatch_token$app$appname)
   }
 
   barentswatch_token

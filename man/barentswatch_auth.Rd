@@ -5,7 +5,6 @@
 \title{Generata BarentsWatch API authentication token}
 \usage{
 barentswatch_auth(
-  app_name = Sys.getenv("BARENTSWATCH_APP_NAME"),
   app_client_id = Sys.getenv("BARENTSWATCH_APP_ID"),
   app_secret = Sys.getenv("BARENTSWATCH_APP_SECRET"),
   token = NULL,
@@ -13,8 +12,6 @@ barentswatch_auth(
 )
 }
 \arguments{
-\item{app_name}{Name of your developer app}
-
 \item{app_client_id}{The Client ID of your developer app}
 
 \item{app_secret}{The secret for your developer app}
@@ -23,5 +20,5 @@ barentswatch_auth(
 Generate a token for the user and the desired scope. The user is sent to the barentswatch authentication page if he/she hasn't given permission to the app yet, else, is sent to the app webpage.
 }
 \examples{
-barentswatch_auth(app_name = "APP Name", app_client_id = "App Client ID", app_secret = "APP Secret", token = NULL, new_user = FALSE)
+barentswatch_auth(app_client_id = "App Client ID", app_secret = "APP Secret", token = NULL, new_user = FALSE)
 }
